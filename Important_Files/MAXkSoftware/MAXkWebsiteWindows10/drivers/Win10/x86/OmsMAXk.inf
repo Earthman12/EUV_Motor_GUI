@@ -1,0 +1,103 @@
+;
+;Module Name:
+;
+;	OmsMAXk.inf
+;
+;Abstract:
+;	INF file for installing OMS MAXk Motion Controller drivers on
+;	Windows 7 and 10 systems.
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=OmsMotion
+ClassGuid={31B5EA49-98E5-4ce3-BF81-FE6E6E7D4EE0} 
+Provider=%OmsMfgString%
+CatalogFile=OmsMAXk.cat
+DriverVer=03/28/2017,13.40.9.35
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%OmsMfgString%=OmsModelSection,NTx86
+
+[OmsModelSection.NTx86]
+%OmsMAXk1.DeviceDesc%=OmsMAXk_Device, PCI\VEN_1057&DEV_0006&SUBSYS_0011160C&REV_14
+%OmsMAXk2.DeviceDesc%=OmsMAXk_Device, PCI\VEN_1057&DEV_0006&SUBSYS_0012160C&REV_14
+%OmsMAXk3.DeviceDesc%=OmsMAXk_Device, PCI\VEN_1057&DEV_0006&SUBSYS_0013160C&REV_14
+%OmsMAXk4.DeviceDesc%=OmsMAXk_Device, PCI\VEN_1057&DEV_0006&SUBSYS_0014160C&REV_14
+
+[OmsMAXk_Device]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+OmsMAXk.sys
+
+[DestinationDirs]
+;Default destination is \winnt\system32\drivers
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=OmsMotionClassReg
+
+[OmsMotionClassReg]
+HKR,,,0,%OmsMotionClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+OmsMAXk.sys  = 1,,
+
+;-------------- Service installation
+[OmsMAXk_Device.Services]
+AddService = OmsMAXk,%SPSVCINST_ASSOCSERVICE%, OmsMAXk_Service_Inst
+
+; -------------- OmsMAXk driver install sections
+[OmsMAXk_Service_Inst]
+DisplayName    = %OmsMAXk.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\OmsMAXk.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- OmsMAXk_Device Coinstaller installation ------
+;
+[DestinationDirs]
+OmsMAXk_Device_CoInstaller_CopyFiles = 11
+
+[OmsMAXk_Device.CoInstallers]
+AddReg=OmsMAXk_Device_CoInstaller_AddReg
+CopyFiles=OmsMAXk_Device_CoInstaller_CopyFiles
+
+[OmsMAXk_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+[OmsMAXk_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01011.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01011.dll=1 ; make sure the number matches with SourceDisksNames
+
+[OmsMAXk_Device.Wdf]
+KmdfService =  OmsMAXk, OmsMAXk_wdfsect
+[OmsMAXk_wdfsect]
+KmdfLibraryVersion = 1.11
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+OmsMfgString="Oregon Micro Systems, Inc."
+OmsMotionClassName="Oms Motion Controllers"
+DiskName = "OmsMAXk Installation Disk"
+OmsMAXk1.DeviceDesc = "OmsMAXk Device (OmsMAXk1)"
+OmsMAXk2.DeviceDesc = "OmsMAXk Device (OmsMAXk2)"
+OmsMAXk3.DeviceDesc = "OmsMAXk Device (OmsMAXk3)"
+OmsMAXk4.DeviceDesc = "OmsMAXk Device (OmsMAXk4)"
+OmsMAXk.SVCDESC = "OmsMAXk Service"
